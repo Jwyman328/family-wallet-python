@@ -3,7 +3,6 @@ from .services.wallet.wallet import WalletService
 
 
 class ServiceContainer(containers.DeclarativeContainer):
-    # containers.WiringConfiguration(packages=[".views"])
-    wiring_config = containers.WiringConfiguration(modules=[".views.hello_world"])
+    wiring_config = containers.WiringConfiguration(packages=[".views"])
 
     wallet_service = providers.Factory(WalletService)

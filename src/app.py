@@ -1,7 +1,6 @@
 from flask import Flask
 from .views import hello_world
 import bdkpython as bdk
-from flask import g
 from .injection import ServiceContainer
 
 
