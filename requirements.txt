@@ -1,0 +1,3 @@
+flask
+bdkpython
+dependency-injector
