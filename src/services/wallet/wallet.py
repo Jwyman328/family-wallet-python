@@ -9,7 +9,7 @@ class WalletService:
     def connect_wallet(cls) -> bdk.OnlineWallet:
         descriptor = "wpkh(tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy/84h/0h/0h/0/*)"
 
-        db_config = bdk.DatabaseConfig.MEMORY("my junk")
+        db_config = bdk.DatabaseConfig.MEMORY("my stuff")
         blockchain_config = bdk.BlockchainConfig.ELECTRUM(
             bdk.ElectrumConfig("127.0.0.1:50000", None, 5, None, 100)
         )
@@ -26,7 +26,6 @@ class WalletService:
 
         print(f"New BIP84 testnet address: {address_info}")
 
-        # print wallet balance
         class MyProgress(bdk.BdkProgress):
             def update(self, progress, message):
                 print("the progress", progress, "and the message", message)
