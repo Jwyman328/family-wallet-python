@@ -12,6 +12,6 @@ def create_app() -> Flask:
     container = ServiceContainer()
     app = Flask(__name__)
     app.container = container
-    app.register_blueprint(balance.get_balance_page)
+    app.register_blueprint(balance.balance_page)
 
     return app
