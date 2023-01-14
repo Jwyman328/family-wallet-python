@@ -1,5 +1,5 @@
 from flask import Flask
-from .views import hello_world
+from .views import balance
 from .injection import ServiceContainer
 
 # TODO hook up black /some typing in vscode
@@ -12,6 +12,6 @@ def create_app() -> Flask:
     container = ServiceContainer()
     app = Flask(__name__)
     app.container = container
-    app.register_blueprint(hello_world.hello_world_page)
+    app.register_blueprint(balance.get_balance_page)
 
     return app

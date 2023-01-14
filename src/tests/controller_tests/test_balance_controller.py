@@ -11,7 +11,7 @@ from src.services.wallet.wallet import WalletService
 from src.app import create_app
 
 
-class TestHelloWorldController(TestCase):
+class TestBalanceController(TestCase):
     def setUp(self):
         self.mock_wallet_service = mock.Mock(WalletService)
         self.mock_online_wallet = mock.Mock(bdk.OnlineWallet)
@@ -28,6 +28,6 @@ class TestHelloWorldController(TestCase):
             self.mock_online_wallet, "get_balance", return_value="10000"
         ):
 
-            response = self.test_client.get("/worlds/")
+            response = self.test_client.get("/balance/")
             assert response.status == "200 OK"
             assert response.data == b"Wallet balance is: 10000"

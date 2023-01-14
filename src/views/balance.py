@@ -4,12 +4,12 @@ from ..services.wallet.wallet import WalletService
 from dependency_injector.wiring import inject, Provide
 from ..injection import ServiceContainer
 
-hello_world_page = Blueprint("hello_world", __name__, url_prefix="/worlds")
+get_balance_page = Blueprint("get_balance", __name__, url_prefix="/balance")
 
 
-@hello_world_page.route("/")
+@get_balance_page.route("/")
 @inject
-def hello_world(
+def get_balance(
     wallet_service: WalletService = Provide[ServiceContainer.wallet_service],
 ):
     wallet = wallet_service.wallet
