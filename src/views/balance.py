@@ -1,8 +1,8 @@
 from flask import Blueprint
 from flask import g
-from ..services.wallet.wallet import WalletService
+from src.services.wallet.wallet import WalletService
 from dependency_injector.wiring import inject, Provide
-from ..injection import ServiceContainer
+from src.injection import ServiceContainer
 
 balance_page = Blueprint("get_balance", __name__, url_prefix="/balance")
 

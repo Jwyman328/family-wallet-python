@@ -1,1 +1,1 @@
-from .wallet import wallet
+from src.services import wallet

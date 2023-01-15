@@ -1,11 +1,10 @@
 from flask import Flask
-from .views import balance
-from .injection import ServiceContainer
+from src.views import balance
+from src.injection import ServiceContainer
 
 # TODO hook up black /some typing in vscode
 # TODO set up some tests with unittest and pytest. - x
 # TODO add env variables and configs for electrum server location / locations in general
-# TODO clean up imports, why so many init files / folders.
 # TODO set up docker postgres
 # set up alembric / sqlalchamey and some models.
 def create_app() -> Flask:

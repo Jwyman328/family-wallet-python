@@ -1,1 +1,1 @@
-from . import balance
+from src.views import balance
