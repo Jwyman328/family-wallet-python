@@ -7,7 +7,7 @@ sys.path.insert(1, parent)
 import bdkpython as bdk
 from unittest import TestCase, mock
 from src.injection import ServiceContainer
-from src.services.wallet.wallet import WalletService
+from src.services import WalletService
 from src.app import create_app
 
 

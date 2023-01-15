@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask import g
-from src.services.wallet.wallet import WalletService
+from src.services import WalletService
 from dependency_injector.wiring import inject, Provide
 from src.injection import ServiceContainer
 
