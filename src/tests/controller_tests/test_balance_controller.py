@@ -31,4 +31,6 @@ class TestBalanceController(TestCase):
 
             response = self.test_client.get("/balance/")
             assert response.status == "200 OK"
-            assert response.data == b"Wallet balance is: 10000"
+            assert response.data == {"total": "10000", 
+                                     "spendable: "1000", 
+                                     "confirmed": "10000"}

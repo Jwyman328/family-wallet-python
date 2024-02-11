@@ -15,4 +15,4 @@ def get_balance(
     balance = wallet.get_balance()
     print(f'testing info log {balance}')
 
-    return {"total": balance.total, "spendable", "confirmed": balance.confirmed} 
+    return {"total": balance.total, "spendable": balance.spendable, "confirmed": balance.confirmed} 

@@ -3,6 +3,7 @@ from flask_cors import CORS, cross_origin
 from src.views import balance
 from src.injection import ServiceContainer
 # set up hot reloading
+# TODO fix why I get 0 tests to run doing $ python -m unittest  
 # TODO set up nvim pyhton linting and formatting
 # TODO hook up black /some typing in vscode
 # TODO set up some tests with unittest and pytest. - x
