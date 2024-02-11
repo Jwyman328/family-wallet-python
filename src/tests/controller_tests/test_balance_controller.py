@@ -8,7 +8,7 @@ import bdkpython as bdk
 from unittest import TestCase, mock
 from src.injection import ServiceContainer
 from src.services import WalletService
-from src.app import create_app
+from src.app import AppCreator 
 
 
 class TestBalanceController(TestCase):
@@ -16,7 +16,8 @@ class TestBalanceController(TestCase):
         self.mock_wallet_service = mock.Mock(WalletService)
         self.mock_online_wallet = mock.Mock(bdk.OnlineWallet)
 
-        self.app = create_app()
+        app_creator = AppCreator()
+        self.app = app_creator.create_app()
         self.test_client = self.app.test_client()
 
     def test_hello_world_controller_returns_balance(self):

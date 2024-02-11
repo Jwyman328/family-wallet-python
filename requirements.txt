@@ -1,4 +1,5 @@
 flask
-bdkpython
+bdkpython==0.28.0
 dependency-injector
 pytest
+flask-cors
