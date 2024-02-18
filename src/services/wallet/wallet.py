@@ -98,7 +98,7 @@ class WalletService:
         tx_response = self.build_transaction(
             local_utxo.outpoint, local_utxo.txout, sats_per_vbyte, example_script
         )
-        print(f"what is tx_response: {tx_response}")
+
         if tx_response is not None:
             (_, transaction) = tx_response
             fee = transaction.fee
