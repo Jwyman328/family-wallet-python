@@ -1,14 +1,14 @@
-import os, sys
-
-parent = os.path.abspath(".")
-sys.path.insert(1, parent)
-
+import os
+import sys
 
 import bdkpython as bdk
 from unittest import TestCase, mock
 from src.injection import ServiceContainer
 from src.services import WalletService
-from src.app import AppCreator 
+from src.app import AppCreator
+
+parent = os.path.abspath(".")
+sys.path.insert(1, parent)
 
 
 class TestBalanceController(TestCase):
@@ -28,9 +28,10 @@ class TestBalanceController(TestCase):
         ), mock.patch.object(
             self.mock_online_wallet, "get_balance", return_value="10000"
         ):
-
             response = self.test_client.get("/balance/")
             assert response.status == "200 OK"
-            assert response.data == {"total": "10000", 
-                                     "spendable: "1000", 
-                                     "confirmed": "10000"}
+            assert response.data == {
+                "total": "10000",
+                "spendable": "10000",
+                "confirmed": "10000",
+            }

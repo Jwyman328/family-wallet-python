@@ -1,8 +1,8 @@
 from flask import Blueprint
-from flask import g
 from src.services import WalletService
 from dependency_injector.wiring import inject, Provide
 from src.injection import ServiceContainer
+
 balance_page = Blueprint("get_balance", __name__, url_prefix="/balance")
 
 
@@ -13,6 +13,10 @@ def get_balance(
 ):
     wallet = wallet_service.wallet
     balance = wallet.get_balance()
-    print(f'testing info log {balance}')
+    print(f"testing info log {balance}")
 
-    return {"total": balance.total, "spendable": balance.spendable, "confirmed": balance.confirmed} 
+    return {
+        "total": balance.total,
+        "spendable": balance.spendable,
+        "confirmed": balance.confirmed,
+    }
