@@ -1,5 +1,5 @@
 import bdkpython as bdk
-from typing import Tuple, Union
+from typing import Literal, Optional, Tuple, TypedDict
 from src.types import (
     OutpointType,
     TxOutType,
@@ -15,6 +15,19 @@ from src.services.wallet.raw_output_script_examples import (
     p2wpkh_raw_output_script,
     p2wsh_raw_output_script,
 )
+
+
+# TODO I don't like the TypedDicts here, I think I should use dataclass or something better than
+# these dicts, like a named tuple
+# passing python dicts around seems like an anti-pattern in python
+class BuildTransactionResponseType(TypedDict):
+    status: Literal["success", "unspendable", "error"]
+    data: Optional[Tuple[str, TransactionDetailsType]]
+
+
+class GetFeeEstimateForUtxoResponseType(TypedDict):
+    status: Literal["success", "unspendable", "error"]
+    data: Optional[Tuple[float, int]]
 
 
 class WalletService:
@@ -62,7 +75,7 @@ class WalletService:
         utxo: TxOutType,
         sats_per_vbyte: int,
         raw_output_script: str,
-    ) -> Union[Tuple[str, TransactionDetailsType], None]:
+    ) -> BuildTransactionResponseType:
         try:
             tx_builder = bdk.TxBuilder()
             tx_builder = tx_builder.add_utxo(outpoint)
@@ -78,15 +91,21 @@ class WalletService:
 
             tx_builder = tx_builder.add_recipient(script, transaction_amount)
             built_transaction: TxBuilderResultType = tx_builder.finish(self.wallet)
-            return (built_transaction.psbt, built_transaction.transaction_details)
+            return {
+                "status": "success",
+                "data": (built_transaction.psbt, built_transaction.transaction_details),
+            }
 
+        except bdk.BdkError.InsufficientFunds:
+            return {"status": "unspendable", "data": None}
         except Exception as e:
             print(f"Error adding utxo: {e}")
+            return {"status": "error", "data": None}
             return None
 
     def get_fee_estimate_for_utxo(
         self, local_utxo: LocalUtxoType, script_type: ScriptType, sats_per_vbyte: int
-    ) -> Union[Tuple[float, int], None]:
+    ) -> GetFeeEstimateForUtxoResponseType:
         example_scripts = {
             ScriptType.P2PKH: p2pkh_raw_output_script,
             ScriptType.P2SH: p2sh_raw_output_script,
@@ -99,11 +118,13 @@ class WalletService:
             local_utxo.outpoint, local_utxo.txout, sats_per_vbyte, example_script
         )
 
-        if tx_response is not None:
-            (_, transaction) = tx_response
+        if tx_response["status"] == "success" and tx_response["data"] is not None:
+            (_, transaction) = tx_response["data"]
             fee = transaction.fee
             if fee is not None:
                 percent_fee_is_of_utxo: float = (fee / local_utxo.txout.value) * 100
-                return (percent_fee_is_of_utxo, fee)
+                return {"status": "success", "data": (percent_fee_is_of_utxo, fee)}
+            else:
+                return {"status": "error", "data": None}
         else:
-            return None
+            return {"status": tx_response["status"], "data": None}

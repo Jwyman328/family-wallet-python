@@ -46,12 +46,21 @@ def get_fee_for_utxo(
     fee_estimate_response = wallet_service.get_fee_estimate_for_utxo(
         local_utxo, mock_script_type, int(fee_rate)
     )
-    if fee_estimate_response is not None:
-        (percent_fee_is_of_utxo, fee) = fee_estimate_response
+    if (
+        fee_estimate_response["status"] == "success"
+        and fee_estimate_response["data"] is not None
+    ):
+        (percent_fee_is_of_utxo, fee) = fee_estimate_response["data"]
 
-        return {"percent_fee_is_of_utxo": percent_fee_is_of_utxo, "fee": fee}
+        return {
+            "spendable": True,
+            "percent_fee_is_of_utxo": percent_fee_is_of_utxo,
+            "fee": fee,
+        }
+    elif fee_estimate_response["status"] == "unspendable":
+        return {"error": "unspendable", "spendable": False}
     else:
-        return {"error": "error getting fee estimate"}
+        return {"error": "error getting fee estimate for utxo", "spendable": False}
 
 
 @utxo_page.route("/")
