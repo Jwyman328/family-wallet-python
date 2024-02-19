@@ -52,7 +52,7 @@ class WalletService:
 
         return wallet
 
-    def get_all_utxos(self):
+    def get_all_utxos(self) -> list[LocalUtxoType]:
         utxos = self.wallet.list_unspent()
         return utxos
 

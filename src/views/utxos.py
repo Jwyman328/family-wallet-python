@@ -1,27 +1,50 @@
-from flask import Blueprint
+from flask import Blueprint, request
+
 from src.services import WalletService
 from dependency_injector.wiring import inject, Provide
 from src.injection import ServiceContainer
 from src.types.script_types import ScriptType
+from typing import Optional
 
 
 utxo_page = Blueprint("get_utxos", __name__, url_prefix="/utxos")
 
 
-@utxo_page.route("/fees")
+@utxo_page.route("/fees/<txid>/<vout>")
 @inject
 def get_fee_for_utxo(
     wallet_service: WalletService = Provide[ServiceContainer.wallet_service],
+    txid: Optional[str] = None,
+    vout: Optional[str] = None,
 ):
+    """
+    Get a fee estimate for a given utxo.
+    To find the utxo, we need to know the txid and vout value.
+    """
+    # TODO if the tx is unspendable then return that info somehow
+
     utxos = wallet_service.get_all_utxos()
+
+    fee_rate: str = request.args.get(
+        "feeRate",
+        default="1",
+    )
     # now find the utxo that matches the tx id and vout value
     # use pydantic to validate the query params
-    local_utxo = utxos[0]
+    utxo = [
+        utxo
+        for utxo in utxos
+        if utxo.outpoint.txid == txid and str(utxo.outpoint.vout) == vout
+    ]
+    local_utxo = utxo[0] if utxo else None
+
+    if local_utxo is None:
+        return {"error": "utxo not found"}
+
     mock_script_type = ScriptType.P2PKH
     # get this value from query param
-    sats_per_vbyte = 4
     fee_estimate_response = wallet_service.get_fee_estimate_for_utxo(
-        local_utxo, mock_script_type, sats_per_vbyte
+        local_utxo, mock_script_type, int(fee_rate)
     )
     if fee_estimate_response is not None:
         (percent_fee_is_of_utxo, fee) = fee_estimate_response
