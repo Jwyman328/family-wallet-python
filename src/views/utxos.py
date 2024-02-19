@@ -2,15 +2,7 @@ from flask import Blueprint
 from src.services import WalletService
 from dependency_injector.wiring import inject, Provide
 from src.injection import ServiceContainer
-from src.services.wallet.raw_output_script_examples import (
-    p2pkh_raw_output_script,
-    p2pk_raw_output_script,
-    p2sh_raw_output_script,
-    p2wpkh_raw_output_script,
-    p2wsh_raw_output_script,
-)
 from src.types.script_types import ScriptType
-from src.utils import object_to_dict
 
 
 utxo_page = Blueprint("get_utxos", __name__, url_prefix="/utxos")

@@ -10,4 +10,4 @@ do
     nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s #same address as test_address in env variables.
 done
 sleep 5 # sleep 5 give nigiri extra start up time before flask run can be run.
-flask run -h localhost -p 5011
+flask run -h localhost -p 5011 --reload

@@ -3,4 +3,7 @@
 - clean up recent code
 - make /fee endpoint take in query params and url params
 - add tests 
+- fast refresh
+- want to be able to add multiple utxos in a tx and get the fee it will cost.
+- do async await getting the current memepool fee rates.
 
