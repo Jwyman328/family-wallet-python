@@ -1,20 +1,23 @@
-import os
-import sys
-
+from dataclasses import dataclass
 import bdkpython as bdk
 from unittest import TestCase, mock
 from src.injection import ServiceContainer
 from src.services import WalletService
 from src.app import AppCreator
+import json
 
-parent = os.path.abspath(".")
-sys.path.insert(1, parent)
+
+@dataclass
+class MockGetBalanceResponse:
+    total: str
+    spendable: str
+    confirmed: str
 
 
 class TestBalanceController(TestCase):
     def setUp(self):
         self.mock_wallet_service = mock.Mock(WalletService)
-        self.mock_online_wallet = mock.Mock(bdk.OnlineWallet)
+        self.mock_online_wallet = mock.Mock(bdk.Wallet)
 
         app_creator = AppCreator()
         self.app = app_creator.create_app()
@@ -26,11 +29,13 @@ class TestBalanceController(TestCase):
         ), mock.patch.object(
             WalletService, "connect_wallet", return_value=self.mock_online_wallet
         ), mock.patch.object(
-            self.mock_online_wallet, "get_balance", return_value="10000"
+            self.mock_online_wallet,
+            "get_balance",
+            return_value=MockGetBalanceResponse("10000", "10000", "10000"),
         ):
             response = self.test_client.get("/balance/")
             assert response.status == "200 OK"
-            assert response.data == {
+            assert json.loads(response.data) == {
                 "total": "10000",
                 "spendable": "10000",
                 "confirmed": "10000",

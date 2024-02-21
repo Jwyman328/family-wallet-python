@@ -4,5 +4,6 @@ from src.types.bdk_types import (
     TransactionDetailsType,
     LocalUtxoType,
     TxBuilderResultType,
+    FeeDetails,
 )
 from src.types.script_types import ScriptType

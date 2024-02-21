@@ -41,3 +41,9 @@ class LocalUtxoType:
 class TxBuilderResultType:
     psbt: str
     transaction_details: TransactionDetailsType
+
+
+@dataclass
+class FeeDetails:
+    percent_fee_is_of_utxo: float
+    fee: int  # in sats
