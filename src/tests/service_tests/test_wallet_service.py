@@ -3,6 +3,7 @@ import os
 from unittest.mock import MagicMock, patch
 from src.services import WalletService
 import bdkpython as bdk
+from src.services.wallet.wallet import BuildTransactionResponseType
 from src.types.bdk_types import (
     FeeDetails,
     LocalUtxoType,
@@ -33,7 +34,6 @@ class TestWalletService(TestCase):
         list_unspent: MagicMock = self.bdk_wallet_mock.list_unspent
 
         list_unspent.assert_called_with()
-        print("utxos: ", utxos)
         assert utxos is self.unspent_utxos
 
     def test_build_transaction(self):
@@ -46,9 +46,7 @@ class TestWalletService(TestCase):
         raw_output_script = ""
 
         tx_builder_mock = MagicMock()
-        with patch.object(
-            bdk, "TxBuilder", return_value=tx_builder_mock
-        ) as mock_tx_builder:
+        with patch.object(bdk, "TxBuilder", return_value=tx_builder_mock):
             built_transaction_mock = TxBuilderResultType(
                 psbt="mock_psbt", transaction_details=transaction_details_mock
             )
@@ -58,13 +56,54 @@ class TestWalletService(TestCase):
 
             tx_builder_mock.finish.return_value = built_transaction_mock
 
-            mock_tx_builder.return_value = tx_builder_mock
-
             build_transaction_response = self.wallet_service.build_transaction(
                 outpoint, utxo, sats_per_vbyte, raw_output_script
             )
             assert build_transaction_response.status == "success"
             assert build_transaction_response.data is built_transaction_mock
+
+    def test_build_transaction_with_insufficientFundsError(self):
+        outpoint = OutpointType(txid="txid", vout=0)
+        utxo = TxOutType(
+            value=1000,
+            script_pubkey="mock_script_pubkey",
+        )
+        sats_per_vbyte = 4
+        raw_output_script = ""
+        tx_builder_mock = MagicMock()
+        with patch.object(bdk, "TxBuilder", return_value=tx_builder_mock):
+            tx_builder_mock.add_utxo.return_value = tx_builder_mock
+            tx_builder_mock.fee_rate.return_value = tx_builder_mock
+            tx_builder_mock.add_recipient.return_value = tx_builder_mock
+            tx_builder_mock.finish.side_effect = bdk.BdkError.InsufficientFunds()
+            build_transaction_response = self.wallet_service.build_transaction(
+                outpoint, utxo, sats_per_vbyte, raw_output_script
+            )
+
+            assert build_transaction_response.status == "unspendable"
+            assert build_transaction_response.data == None
+
+    def test_build_transaction_with_Error(self):
+        outpoint = OutpointType(txid="txid", vout=0)
+        utxo = TxOutType(
+            value=1000,
+            script_pubkey="mock_script_pubkey",
+        )
+        sats_per_vbyte = 4
+        raw_output_script = ""
+        mock_tx_builder = MagicMock()
+        with patch.object(bdk, "TxBuilder", return_value=mock_tx_builder):
+            mock_tx_builder.add_utxo.return_value = mock_tx_builder
+            mock_tx_builder.fee_rate.return_value = mock_tx_builder
+            mock_tx_builder.add_recipient.return_value = mock_tx_builder
+            mock_tx_builder.finish.side_effect = Exception("error")
+
+            build_transaction_response = self.wallet_service.build_transaction(
+                outpoint, utxo, sats_per_vbyte, raw_output_script
+            )
+
+            assert build_transaction_response.status == "error"
+            assert build_transaction_response.data == None
 
     def test_get_fee_estimate_for_utxo(self):
         tx_builder_mock = MagicMock()
@@ -90,3 +129,33 @@ class TestWalletService(TestCase):
             fee: int = cast(int, transaction_details_mock.fee)
             expected_fee_percent = (fee / local_utxo_mock.txout.value) * 100
             assert fee_estimate_response.data == FeeDetails(expected_fee_percent, fee)
+
+    def test_get_fee_estimate_for_utxo_with_build_tx_unspendable(self):
+        build_transaction_error_response = BuildTransactionResponseType(
+            "unspendable", None
+        )
+        with patch.object(
+            WalletService,
+            "build_transaction",
+            return_value=build_transaction_error_response,
+        ):
+            get_fee_estimate_response = self.wallet_service.get_fee_estimate_for_utxo(
+                local_utxo_mock, ScriptType.P2PKH, 4
+            )
+
+            assert get_fee_estimate_response.status == "unspendable"
+            assert get_fee_estimate_response.data == None
+
+    def test_get_fee_estimate_for_utxo_with_build_tx_error(self):
+        build_transaction_error_response = BuildTransactionResponseType("error", None)
+        with patch.object(
+            WalletService,
+            "build_transaction",
+            return_value=build_transaction_error_response,
+        ):
+            get_fee_estimate_response = self.wallet_service.get_fee_estimate_for_utxo(
+                local_utxo_mock, ScriptType.P2PKH, 4
+            )
+
+            assert get_fee_estimate_response.status == "error"
+            assert get_fee_estimate_response.data == None
