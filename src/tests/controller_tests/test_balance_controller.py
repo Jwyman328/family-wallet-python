@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import bdkpython as bdk
 from unittest import TestCase, mock
-from src.injection import ServiceContainer
 from src.services import WalletService
 from src.app import AppCreator
 import json
@@ -23,16 +22,12 @@ class TestBalanceController(TestCase):
         self.app = app_creator.create_app()
         self.test_client = self.app.test_client()
 
-    def test_hello_world_controller_returns_balance(self):
-        with ServiceContainer.wallet_service.override(
-            self.mock_wallet_service
-        ), mock.patch.object(
-            WalletService, "connect_wallet", return_value=self.mock_online_wallet
-        ), mock.patch.object(
-            self.mock_online_wallet,
-            "get_balance",
-            return_value=MockGetBalanceResponse("10000", "10000", "10000"),
-        ):
+    def test_balance_controller_returns_balance(self):
+        with self.app.container.wallet_service.override(self.mock_wallet_service):
+            self.mock_online_wallet.get_balance = mock.Mock(
+                return_value=MockGetBalanceResponse("10000", "10000", "10000")
+            )
+            self.mock_wallet_service.wallet = self.mock_online_wallet
             response = self.test_client.get("/balance/")
             assert response.status == "200 OK"
             assert json.loads(response.data) == {

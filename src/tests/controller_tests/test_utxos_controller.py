@@ -1,13 +1,11 @@
 from unittest import TestCase
-from unittest.mock import MagicMock, patch, Mock
+from unittest.mock import MagicMock
 from src.app import AppCreator
 from src.services.wallet.wallet import WalletService
 from src.tests.mocks import local_utxo_mock
-import bdkpython as bdk
 import json
 
 
-# do I need the unittest.TestCase inheritance?
 class TestUtxosController(TestCase):
     def setUp(self):
         app_creator = AppCreator()
@@ -18,15 +16,10 @@ class TestUtxosController(TestCase):
             WalletService, return_value=self.mock_wallet_service
         )
 
-        # self.mock_wallet_service = Mock(WalletService)
-        self.mock_online_wallet = Mock(bdk.Wallet)
-
     def test_get_utxos(self):
         utxos_mock = [local_utxo_mock]
         get_all_utxos_mock = MagicMock(return_value=utxos_mock)
-        with patch.object(WalletService, "connect_wallet", MagicMock), patch.object(
-            WalletService, "get_all_utxos", get_all_utxos_mock
-        ):
+        with self.app.container.wallet_service.override(self.mock_wallet_service):
             self.mock_wallet_service.get_all_utxos = get_all_utxos_mock
             get_utxo_response = self.test_client.get("/utxos/")
 
@@ -39,6 +32,5 @@ class TestUtxosController(TestCase):
                 }
             ]
 
-            get_utxo_response.status == "200 OK"
-            print("get utxos response", get_utxo_response.data)
+            assert get_utxo_response.status == "200 OK"
             assert json.loads(get_utxo_response.data) == {"utxos": expected_utxos}
