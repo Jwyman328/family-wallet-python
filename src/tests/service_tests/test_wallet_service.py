@@ -24,6 +24,14 @@ class TestWalletService(TestCase):
         self.bdk_wallet_mock = MagicMock()
         self.unspent_utxos: list[LocalUtxoType] = [local_utxo_mock]
         self.bdk_wallet_mock.list_unspent.return_value = self.unspent_utxos
+
+        self.outpoint_mock = OutpointType(txid="txid", vout=0)
+        self.utxo_mock = TxOutType(
+            value=1000,
+            script_pubkey="mock_script_pubkey",
+        )
+        self.sats_per_vbyte_mock = 4
+        self.raw_output_script_mock = ""
         with patch.object(
             WalletService, "connect_wallet", return_value=self.bdk_wallet_mock
         ):
@@ -37,14 +45,6 @@ class TestWalletService(TestCase):
         assert utxos is self.unspent_utxos
 
     def test_build_transaction(self):
-        outpoint = OutpointType(txid="txid", vout=0)
-        utxo = TxOutType(
-            value=1000,
-            script_pubkey="mock_script_pubkey",
-        )
-        sats_per_vbyte = 4
-        raw_output_script = ""
-
         tx_builder_mock = MagicMock()
         with patch.object(bdk, "TxBuilder", return_value=tx_builder_mock):
             built_transaction_mock = TxBuilderResultType(
@@ -57,19 +57,15 @@ class TestWalletService(TestCase):
             tx_builder_mock.finish.return_value = built_transaction_mock
 
             build_transaction_response = self.wallet_service.build_transaction(
-                outpoint, utxo, sats_per_vbyte, raw_output_script
+                self.outpoint_mock,
+                self.utxo_mock,
+                self.sats_per_vbyte_mock,
+                self.raw_output_script_mock,
             )
             assert build_transaction_response.status == "success"
             assert build_transaction_response.data is built_transaction_mock
 
     def test_build_transaction_with_insufficientFundsError(self):
-        outpoint = OutpointType(txid="txid", vout=0)
-        utxo = TxOutType(
-            value=1000,
-            script_pubkey="mock_script_pubkey",
-        )
-        sats_per_vbyte = 4
-        raw_output_script = ""
         tx_builder_mock = MagicMock()
         with patch.object(bdk, "TxBuilder", return_value=tx_builder_mock):
             tx_builder_mock.add_utxo.return_value = tx_builder_mock
@@ -77,20 +73,16 @@ class TestWalletService(TestCase):
             tx_builder_mock.add_recipient.return_value = tx_builder_mock
             tx_builder_mock.finish.side_effect = bdk.BdkError.InsufficientFunds()
             build_transaction_response = self.wallet_service.build_transaction(
-                outpoint, utxo, sats_per_vbyte, raw_output_script
+                self.outpoint_mock,
+                self.utxo_mock,
+                self.sats_per_vbyte_mock,
+                self.raw_output_script_mock,
             )
 
             assert build_transaction_response.status == "unspendable"
             assert build_transaction_response.data == None
 
     def test_build_transaction_with_Error(self):
-        outpoint = OutpointType(txid="txid", vout=0)
-        utxo = TxOutType(
-            value=1000,
-            script_pubkey="mock_script_pubkey",
-        )
-        sats_per_vbyte = 4
-        raw_output_script = ""
         mock_tx_builder = MagicMock()
         with patch.object(bdk, "TxBuilder", return_value=mock_tx_builder):
             mock_tx_builder.add_utxo.return_value = mock_tx_builder
@@ -99,7 +91,10 @@ class TestWalletService(TestCase):
             mock_tx_builder.finish.side_effect = Exception("error")
 
             build_transaction_response = self.wallet_service.build_transaction(
-                outpoint, utxo, sats_per_vbyte, raw_output_script
+                self.outpoint_mock,
+                self.utxo_mock,
+                self.sats_per_vbyte_mock,
+                self.raw_output_script_mock,
             )
 
             assert build_transaction_response.status == "error"
