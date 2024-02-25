@@ -113,6 +113,7 @@ class WalletService:
             ScriptType.P2WSH: p2wsh_raw_output_script,
             ScriptType.P2PK: p2pk_raw_output_script,
         }
+
         example_script = example_scripts[script_type]
         tx_response = self.build_transaction(
             local_utxo.outpoint, local_utxo.txout, sats_per_vbyte, example_script

@@ -4,14 +4,7 @@ from src.views import balance, utxos
 from src.injection import ServiceContainer
 
 
-# set up hot reloading
-# TODO fix why I get 0 tests to run doing $ python -m unittest
-# TODO set up nvim pyhton linting and formatting -x
-# TODO hook up black /some typing in vscode
-# TODO set up some tests with unittest and pytest. - x
 # TODO add env variables and configs for electrum server location / locations in general
-# TODO set up docker postgres
-# set up alembric / sqlalchamey and some models.
 class AppCreator:
     app = None
 
