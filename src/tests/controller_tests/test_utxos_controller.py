@@ -46,9 +46,9 @@ class TestUtxosController(TestCase):
             )
         )
         with self.app.container.wallet_service.override(self.mock_wallet_service):
-            self.mock_wallet_service.get_all_utxos.return_value = [local_utxo_mock]
+            self.mock_wallet_service.get_utxos_info.return_value = [local_utxo_mock]
 
-            self.mock_wallet_service.get_fee_estimate_for_utxo = (
+            self.mock_wallet_service.get_fee_estimate_for_utxos = (
                 mock_get_fee_estimate_for_utxo
             )
 
@@ -56,12 +56,20 @@ class TestUtxosController(TestCase):
             transaction_id = local_utxo_mock.outpoint.txid
             vout = local_utxo_mock.outpoint.vout
 
+            # /{transaction_id}/{vout} put this in the request args
+            transactions = [
+                {
+                    "id": f"{local_utxo_mock.outpoint.txid}",
+                    "vout": f"{local_utxo_mock.outpoint.vout}",
+                },
+            ]
             response = self.test_client.get(
-                f"/utxos/fees/{transaction_id}/{vout}?feeRate={fee_rate}"
+                "/utxos/fees",
+                query_string={"transactions": transactions, "feeRate": fee_rate},
             )
 
             mock_get_fee_estimate_for_utxo.assert_called_with(
-                local_utxo_mock, ScriptType.P2PKH, fee_rate
+                [local_utxo_mock], ScriptType.P2PKH, fee_rate
             )
 
             assert json.loads(response.data) == {
@@ -75,22 +83,26 @@ class TestUtxosController(TestCase):
             return_value=GetFeeEstimateForUtxoResponseType("unspendable", None)
         )
         with self.app.container.wallet_service.override(self.mock_wallet_service):
-            self.mock_wallet_service.get_all_utxos.return_value = [local_utxo_mock]
+            self.mock_wallet_service.get_utxos_info.return_value = [local_utxo_mock]
 
-            self.mock_wallet_service.get_fee_estimate_for_utxo = (
+            self.mock_wallet_service.get_fee_estimate_for_utxos = (
                 mock_get_fee_estimate_for_utxo
             )
 
             fee_rate = 5
-            transaction_id = local_utxo_mock.outpoint.txid
-            vout = local_utxo_mock.outpoint.vout
-
+            transactions = [
+                {
+                    "id": f"{local_utxo_mock.outpoint.txid}",
+                    "vout": f"{local_utxo_mock.outpoint.vout}",
+                },
+            ]
             response = self.test_client.get(
-                f"/utxos/fees/{transaction_id}/{vout}?feeRate={fee_rate}"
+                "/utxos/fees",
+                query_string={"transactions": transactions, "feeRate": fee_rate},
             )
 
             mock_get_fee_estimate_for_utxo.assert_called_with(
-                local_utxo_mock, ScriptType.P2PKH, fee_rate
+                [local_utxo_mock], ScriptType.P2PKH, fee_rate
             )
 
             assert json.loads(response.data) == {
@@ -103,22 +115,26 @@ class TestUtxosController(TestCase):
             return_value=GetFeeEstimateForUtxoResponseType("error", None)
         )
         with self.app.container.wallet_service.override(self.mock_wallet_service):
-            self.mock_wallet_service.get_all_utxos.return_value = [local_utxo_mock]
+            self.mock_wallet_service.get_utxos_info.return_value = [local_utxo_mock]
 
-            self.mock_wallet_service.get_fee_estimate_for_utxo = (
+            self.mock_wallet_service.get_fee_estimate_for_utxos = (
                 mock_get_fee_estimate_for_utxo
             )
 
             fee_rate = 5
-            transaction_id = local_utxo_mock.outpoint.txid
-            vout = local_utxo_mock.outpoint.vout
-
+            transactions = [
+                {
+                    "id": f"{local_utxo_mock.outpoint.txid}",
+                    "vout": f"{local_utxo_mock.outpoint.vout}",
+                },
+            ]
             response = self.test_client.get(
-                f"/utxos/fees/{transaction_id}/{vout}?feeRate={fee_rate}"
+                "/utxos/fees",
+                query_string={"transactions": transactions, "feeRate": fee_rate},
             )
 
             mock_get_fee_estimate_for_utxo.assert_called_with(
-                local_utxo_mock, ScriptType.P2PKH, fee_rate
+                [local_utxo_mock], ScriptType.P2PKH, fee_rate
             )
 
             assert json.loads(response.data) == {

@@ -3,50 +3,55 @@ from flask import Blueprint, request
 from src.services import WalletService
 from dependency_injector.wiring import inject, Provide
 from src.injection import ServiceContainer
+from src.types.bdk_types import OutpointType
 from src.types.script_types import ScriptType
-from typing import Optional
-
+from typing import Dict, cast
+import json
 
 utxo_page = Blueprint("get_utxos", __name__, url_prefix="/utxos")
 
 
-@utxo_page.route("/fees/<txid>/<vout>")
+@utxo_page.route("/fees")
 @inject
 def get_fee_for_utxo(
     wallet_service: WalletService = Provide[ServiceContainer.wallet_service],
-    txid: Optional[str] = None,
-    vout: Optional[str] = None,
 ):
     """
     Get a fee estimate for a given utxo.
     To find the utxo, we need to know the txid and vout value.
     """
-    print("in here?")
-    # TODO if the tx is unspendable then return that info somehow
-
-    utxos = wallet_service.get_all_utxos()
-    print("any utxos", utxos)
-
     fee_rate: str = request.args.get(
         "feeRate",
         default="1",
     )
-    # now find the utxo that matches the tx id and vout value
-    # use pydantic to validate the query params
-    utxo = [
-        utxo
-        for utxo in utxos
-        if utxo.outpoint.txid == txid and str(utxo.outpoint.vout) == vout
-    ]
-    local_utxo = utxo[0] if utxo else None
 
-    if local_utxo is None:
-        return {"error": "utxo not found"}
+    # this is the perfect place that pydantic would go
+    transactions_json = request.args.getlist(
+        "transactions",
+        None,
+    )
+    transactions: list[Dict[str, str]] = []
+
+    # Iterate over each JSON string in the list
+    for item_json in transactions_json:
+        # Parse the JSON string into a Python dictionary
+        item_dict = json.loads(item_json.replace("'", '"'))
+        transactions.append(item_dict)
+
+    if transactions is None:
+        return {"error": "no transactions were supplied"}
+
+    utxos_wanted = []
+    for tx in transactions:
+        tx_formatted = cast(Dict[str, str], tx)
+        utxos_wanted.append(OutpointType(tx_formatted["id"], int(tx_formatted["vout"])))
+
+    utxos = wallet_service.get_utxos_info(utxos_wanted)
 
     mock_script_type = ScriptType.P2PKH
     # get this value from query param
-    fee_estimate_response = wallet_service.get_fee_estimate_for_utxo(
-        local_utxo, mock_script_type, int(fee_rate)
+    fee_estimate_response = wallet_service.get_fee_estimate_for_utxos(
+        utxos, mock_script_type, int(fee_rate)
     )
     if (
         fee_estimate_response.status == "success"

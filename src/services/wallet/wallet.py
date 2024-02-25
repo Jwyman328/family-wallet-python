@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 import bdkpython as bdk
-from typing import Literal, Optional
+from typing import Literal, Optional, cast, List
 from src.types import (
     OutpointType,
-    TxOutType,
     ScriptType,
     LocalUtxoType,
     TxBuilderResultType,
@@ -66,29 +65,46 @@ class WalletService:
 
         return wallet
 
-    def get_all_utxos(self) -> list[LocalUtxoType]:
+    def get_all_utxos(self) -> List[LocalUtxoType]:
         utxos = self.wallet.list_unspent()
         return utxos
 
+    def get_utxos_info(self, utxos_wanted: List[OutpointType]) -> List[LocalUtxoType]:
+        existing_utxos = cast(List[LocalUtxoType], self.get_all_utxos())
+        utxo_dict = {
+            f"{utxo.outpoint.txid}_{utxo.outpoint.vout}": utxo
+            for utxo in existing_utxos
+        }
+
+        utxos_wanted_that_exist = []
+        for utxo in utxos_wanted:
+            utxo_key = f"{utxo.txid}_{utxo.vout}"
+            if utxo_dict[utxo_key]:
+                utxos_wanted_that_exist.append(utxo_dict[utxo_key])
+
+        return utxos_wanted_that_exist
+
     def build_transaction(
         self,
-        outpoint: OutpointType,
-        utxo: TxOutType,
+        utxos: List[LocalUtxoType],
         sats_per_vbyte: int,
         raw_output_script: str,
     ) -> BuildTransactionResponseType:
         try:
             tx_builder = bdk.TxBuilder()
-            tx_builder = tx_builder.add_utxo(outpoint)
+            outpoints = [utxo.outpoint for utxo in utxos]
+            tx_builder = tx_builder.add_utxos(outpoints)
             tx_builder = tx_builder.fee_rate(sats_per_vbyte)
             binary_script = bytes.fromhex(raw_output_script)
 
             script = bdk.Script(binary_script)
+
             # use half the amount of the utxo so that the transaction can be
             # created used alone for a single transaction
             # in other words so that the input amount can cover both
             # the amount and the fees
-            transaction_amount = utxo.value / 2
+            total_utxos_amount = sum(utxo.txout.value for utxo in utxos)
+            transaction_amount = total_utxos_amount / 2
 
             tx_builder = tx_builder.add_recipient(script, transaction_amount)
             built_transaction: TxBuilderResultType = tx_builder.finish(self.wallet)
@@ -103,8 +119,11 @@ class WalletService:
             print(f"Error adding utxo: {e}")
             return BuildTransactionResponseType("error", None)
 
-    def get_fee_estimate_for_utxo(
-        self, local_utxo: LocalUtxoType, script_type: ScriptType, sats_per_vbyte: int
+    def get_fee_estimate_for_utxos(
+        self,
+        local_utxos: List[LocalUtxoType],
+        script_type: ScriptType,
+        sats_per_vbyte: int,
     ) -> GetFeeEstimateForUtxoResponseType:
         example_scripts = {
             ScriptType.P2PKH: p2pkh_raw_output_script,
@@ -116,7 +135,7 @@ class WalletService:
 
         example_script = example_scripts[script_type]
         tx_response = self.build_transaction(
-            local_utxo.outpoint, local_utxo.txout, sats_per_vbyte, example_script
+            local_utxos, sats_per_vbyte, example_script
         )
 
         if tx_response.status == "success" and tx_response.data is not None:
@@ -124,7 +143,8 @@ class WalletService:
             fee = built_transaction.transaction_details.fee
 
             if fee is not None:
-                percent_fee_is_of_utxo: float = (fee / local_utxo.txout.value) * 100
+                total = fee + built_transaction.transaction_details.sent
+                percent_fee_is_of_utxo: float = (fee / total) * 100
                 return GetFeeEstimateForUtxoResponseType(
                     "success", FeeDetails(percent_fee_is_of_utxo, fee)
                 )
