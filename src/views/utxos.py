@@ -21,9 +21,11 @@ def get_fee_for_utxo(
     Get a fee estimate for a given utxo.
     To find the utxo, we need to know the txid and vout value.
     """
+    print("in here?")
     # TODO if the tx is unspendable then return that info somehow
 
     utxos = wallet_service.get_all_utxos()
+    print("any utxos", utxos)
 
     fee_rate: str = request.args.get(
         "feeRate",
