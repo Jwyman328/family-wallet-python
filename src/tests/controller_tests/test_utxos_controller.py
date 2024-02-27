@@ -53,8 +53,6 @@ class TestUtxosController(TestCase):
             )
 
             fee_rate = 5
-            transaction_id = local_utxo_mock.outpoint.txid
-            vout = local_utxo_mock.outpoint.vout
 
             # /{transaction_id}/{vout} put this in the request args
             transactions = [
@@ -63,9 +61,8 @@ class TestUtxosController(TestCase):
                     "vout": f"{local_utxo_mock.outpoint.vout}",
                 },
             ]
-            response = self.test_client.get(
-                "/utxos/fees",
-                query_string={"transactions": transactions, "feeRate": fee_rate},
+            response = self.test_client.post(
+                "/utxos/fees", query_string={"feeRate": fee_rate}, json=transactions
             )
 
             mock_get_fee_estimate_for_utxo.assert_called_with(
@@ -96,9 +93,8 @@ class TestUtxosController(TestCase):
                     "vout": f"{local_utxo_mock.outpoint.vout}",
                 },
             ]
-            response = self.test_client.get(
-                "/utxos/fees",
-                query_string={"transactions": transactions, "feeRate": fee_rate},
+            response = self.test_client.post(
+                "/utxos/fees", query_string={"feeRate": fee_rate}, json=transactions
             )
 
             mock_get_fee_estimate_for_utxo.assert_called_with(
@@ -128,9 +124,8 @@ class TestUtxosController(TestCase):
                     "vout": f"{local_utxo_mock.outpoint.vout}",
                 },
             ]
-            response = self.test_client.get(
-                "/utxos/fees",
-                query_string={"transactions": transactions, "feeRate": fee_rate},
+            response = self.test_client.post(
+                "/utxos/fees", query_string={"feeRate": fee_rate}, json=transactions
             )
 
             mock_get_fee_estimate_for_utxo.assert_called_with(

@@ -11,7 +11,7 @@ import json
 utxo_page = Blueprint("get_utxos", __name__, url_prefix="/utxos")
 
 
-@utxo_page.route("/fees")
+@utxo_page.route("/fees", methods=["POST"])
 @inject
 def get_fee_for_utxo(
     wallet_service: WalletService = Provide[ServiceContainer.wallet_service],
@@ -26,20 +26,12 @@ def get_fee_for_utxo(
     )
 
     # this is the perfect place that pydantic would go
-    transactions_json = request.args.getlist(
-        "transactions",
-        None,
-    )
-    transactions: list[Dict[str, str]] = []
-
-    # Iterate over each JSON string in the list
-    for item_json in transactions_json:
-        # Parse the JSON string into a Python dictionary
-        item_dict = json.loads(item_json.replace("'", '"'))
-        transactions.append(item_dict)
-
-    if transactions is None:
+    transactions_json = request.data
+    print("transactions_json", transactions_json)
+    if transactions_json is None:
         return {"error": "no transactions were supplied"}
+
+    transactions: list[Dict[str, str]] = json.loads(transactions_json)
 
     utxos_wanted = []
     for tx in transactions:
@@ -48,8 +40,8 @@ def get_fee_for_utxo(
 
     utxos = wallet_service.get_utxos_info(utxos_wanted)
 
+    # todo: get this value from query param
     mock_script_type = ScriptType.P2PKH
-    # get this value from query param
     fee_estimate_response = wallet_service.get_fee_estimate_for_utxos(
         utxos, mock_script_type, int(fee_rate)
     )
