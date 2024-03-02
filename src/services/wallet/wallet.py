@@ -16,6 +16,10 @@ from src.services.wallet.raw_output_script_examples import (
     p2wsh_raw_output_script,
 )
 
+import structlog
+
+LOGGER = structlog.get_logger()
+
 
 @dataclass(frozen=True)
 class BuildTransactionResponseType:
@@ -116,7 +120,11 @@ class WalletService:
         except bdk.BdkError.InsufficientFunds:
             return BuildTransactionResponseType("unspendable", None)
         except Exception as e:
-            print(f"Error adding utxo: {e}")
+            LOGGER.error(
+                "Error building transaction",
+                utxos=utxos,
+                error=e,
+            )
             return BuildTransactionResponseType("error", None)
 
     def get_fee_estimate_for_utxos(

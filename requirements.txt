@@ -4,3 +4,4 @@ dependency-injector
 pytest
 flask-cors
 requests
+structlog

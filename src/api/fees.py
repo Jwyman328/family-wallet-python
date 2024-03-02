@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 import requests
+import structlog
+
+LOGGER = structlog.get_logger()
 
 
 @dataclass
@@ -15,14 +18,20 @@ def get_fees() -> FeeEstimates:
     url = "http://localhost:3000/fee-estimates"
 
     try:
+        LOGGER.info("making request to get fees", url=url)
         response = requests.get(url)
+        LOGGER.info(
+            "get fees response",
+            url=url,
+            status_code=response.status_code,
+            data=response.json(),
+        )
 
         if response.status_code == 200:
             # TODO figure out how to fill the nigiri memool so that there is a fee market
             # todo also add better logging everywhere
             # todo add tests
             data = response.json()
-            print("fee data gotten", data)
             # get in next block
             high = data.get("1", 1)
             # get in block in 2 hours
@@ -33,9 +42,9 @@ def get_fees() -> FeeEstimates:
             # todo use real data not mock data
             return FeeEstimates(low=low, medium=medium, high=high)
         else:
-            # If the request was unsuccessful, print the error message
-            print(f"Error: {response.status_code}")
+            LOGGER.error("Error getting fees from", url=url)
             raise Exception("error")
+
     except Exception as e:
-        print(f"Error: {e}")
+        LOGGER.error("Error getting current fees", error=e)
         raise Exception("making request to get fees failed")

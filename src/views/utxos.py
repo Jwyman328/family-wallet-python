@@ -7,8 +7,11 @@ from src.types.bdk_types import OutpointType
 from src.types.script_types import ScriptType
 from typing import Dict, cast
 import json
+import structlog
 
 utxo_page = Blueprint("get_utxos", __name__, url_prefix="/utxos")
+
+LOGGER = structlog.get_logger()
 
 
 @utxo_page.route("/fees", methods=["POST"])
@@ -27,11 +30,18 @@ def get_fee_for_utxo(
 
     # this is the perfect place that pydantic would go
     transactions_json = request.data
-    print("transactions_json", transactions_json)
+
     if transactions_json is None:
+        LOGGER.error("no transactions were supplied")
         return {"error": "no transactions were supplied"}
 
     transactions: list[Dict[str, str]] = json.loads(transactions_json)
+
+    LOGGER.info(
+        "utxo fee data",
+        transactions=transactions,
+        fee_rate=fee_rate,
+    )
 
     utxos_wanted = []
     for tx in transactions:
@@ -81,5 +91,5 @@ def get_utxos(
             "utxos": utxos_formatted,
         }
     except Exception as e:
-        print(f"Error calling build_transaction with outpoint: {e}")
+        LOGGER.error("Error getting utxos", error=e)
         return {"error": "error getting utxos"}

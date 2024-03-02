@@ -13,7 +13,6 @@ def get_balance(
 ):
     wallet = wallet_service.wallet
     balance = wallet.get_balance()
-    print(f"testing info log {balance}")
 
     return {
         "total": balance.total,
