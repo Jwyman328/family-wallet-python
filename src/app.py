@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from src.views import balance, utxos
+from src.views import balance_page, utxo_page, fees_api
 from src.injection import ServiceContainer
 
 
@@ -23,8 +23,9 @@ class AppCreator:
             )
 
             cls.app.container = container
-            cls.app.register_blueprint(balance.balance_page)
-            cls.app.register_blueprint(utxos.utxo_page)
+            cls.app.register_blueprint(balance_page)
+            cls.app.register_blueprint(utxo_page)
+            cls.app.register_blueprint(fees_api)
 
             return cls.app
 
