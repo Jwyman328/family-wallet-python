@@ -43,21 +43,44 @@ class WalletService:
 
     def __init__(
         self,
-        descriptor="wpkh(tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy/84h/0h/0h/0/*)",
+        descriptor: Optional[str] = None,
         network=bdk.Network.TESTNET,
         electrum_url="127.0.0.1:50000",
     ):
-        self.wallet = WalletService.connect_wallet(descriptor, network, electrum_url)
+        wallet_descriptor = descriptor if descriptor else self.get_global_descriptor()
+        self.wallet = WalletService.connect_wallet(
+            wallet_descriptor, network, electrum_url
+        )
+
+    @classmethod
+    def set_global_descriptor(cls, descriptor: str) -> str:
+        """Set the flask app level global wallet_descriptor."""
+        from src.app import global_data_store
+
+        global_data_store["wallet_descriptor"] = descriptor
+        LOGGER.info("Global wallet descriptor set", descriptor=descriptor)
+
+        return descriptor
+
+    @classmethod
+    def get_global_descriptor(cls) -> str:
+        """Get the flask app level global wallet_descriptor."""
+        from src.app import global_data_store
+
+        descriptor = global_data_store.get("wallet_descriptor", "")
+        return descriptor
 
     @classmethod
     def connect_wallet(
         cls,
-        descriptor="wpkh(tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy/84h/0h/0h/0/*)",
+        descriptor: Optional[str] = None,
         network=bdk.Network.TESTNET,
         electrum_url="127.0.0.1:50000",
     ) -> bdk.Wallet:
         """Using a given descriptor, connect to an electrum server and return the bdk wallet"""
-        descriptor = bdk.Descriptor(descriptor, network)
+
+        descriptor = descriptor if descriptor else cls.get_global_descriptor()
+        wallet_descriptor = bdk.Descriptor(descriptor, network)
 
         db_config = bdk.DatabaseConfig.MEMORY()
         blockchain_config = bdk.BlockchainConfig.ELECTRUM(
@@ -67,7 +90,7 @@ class WalletService:
         blockchain = bdk.Blockchain(blockchain_config)
 
         wallet = bdk.Wallet(
-            descriptor=descriptor,
+            descriptor=wallet_descriptor,
             change_descriptor=None,
             network=network,
             database_config=db_config,
