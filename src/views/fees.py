@@ -1,4 +1,3 @@
-# get current fees,
 from flask import Blueprint
 from dependency_injector.wiring import inject, Provide
 from src.injection import ServiceContainer
@@ -15,9 +14,10 @@ fees_api = Blueprint("fees", __name__, url_prefix="/fees")
     "/current",
 )
 @inject
-def get_fee_for_utxo(
+def get_current_mempool_fees(
     fee_service: FeeService = Provide[ServiceContainer.fee_service],
 ):
+    """Get the current low, medium and high fees for the mempool."""
     try:
         fees: FeeEstimates = fee_service.current_fees()
         return {"low": fees.low, "medium": fees.medium, "high": fees.high}

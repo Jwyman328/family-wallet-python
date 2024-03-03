@@ -13,6 +13,7 @@ class FeeEstimates:
 
 
 def get_fees() -> FeeEstimates:
+    """Make an api request for the current fee rates."""
     # Define the API endpoint URL
     # TODO make this some type of env variable
     url = "http://localhost:3000/fee-estimates"

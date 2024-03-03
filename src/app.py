@@ -3,13 +3,12 @@ from flask_cors import CORS
 from src.views import balance_page, utxo_page, fees_api
 from src.injection import ServiceContainer
 
-# initialize struct log
+# initialize structlog
 from src.utils import logging  # noqa: F401, E261
 
 import structlog
 
 LOGGER = structlog.get_logger()
-# TODO add env variables and configs for electrum server location / locations in general
 
 
 class AppCreator:
@@ -38,6 +37,7 @@ class AppCreator:
 
 
 def create_app() -> Flask:
+    """Initiated the flask app and add pre and post request processing middleware functions."""
     app = AppCreator.create_app()
 
     @app.before_request

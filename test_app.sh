@@ -1,6 +1,9 @@
+# This script is for running tests using an electrum server.
+# Currently the existing tests are mocking all access to an electrum server, but this script 
+# could be used in the future for more integration level tests.
+
 
 # start up an electrum server
-
 #set up regtest environment in separate container
 source environment.sh
 

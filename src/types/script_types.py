@@ -1,7 +1,6 @@
 from enum import Enum
 
 
-# Should this be in the type folder?
 class ScriptType(Enum):
     P2PK = "P2PK"
     P2PKH = "P2PKH"

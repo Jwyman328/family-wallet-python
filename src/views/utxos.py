@@ -20,8 +20,8 @@ def get_fee_for_utxo(
     wallet_service: WalletService = Provide[ServiceContainer.wallet_service],
 ):
     """
-    Get a fee estimate for a given utxo.
-    To find the utxo, we need to know the txid and vout value.
+    Get a fee estimate for any number of utxos as input.
+    To find the utxos, we need to know the txid and vout values.
     """
     fee_rate: str = request.args.get(
         "feeRate",
@@ -75,6 +75,9 @@ def get_fee_for_utxo(
 def get_utxos(
     wallet_service: WalletService = Provide[ServiceContainer.wallet_service],
 ):
+    """
+    Get all utxos in the wallet.
+    """
     try:
         utxos = wallet_service.get_all_utxos()
 

@@ -34,6 +34,13 @@ class GetFeeEstimateForUtxoResponseType:
 
 
 class WalletService:
+    """Initiate a wallet using the bdk library and offer various methods to interact with it.
+
+    The wallet will use an electrum server to obtain data around it's transaction history and current utxos.
+    In order to initiate a wallet, a wallet descriptor is required.
+
+    """
+
     def __init__(
         self,
         descriptor="wpkh(tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy/84h/0h/0h/0/*)",
@@ -49,6 +56,7 @@ class WalletService:
         network=bdk.Network.TESTNET,
         electrum_url="127.0.0.1:50000",
     ) -> bdk.Wallet:
+        """Using a given descriptor, connect to an electrum server and return the bdk wallet"""
         descriptor = bdk.Descriptor(descriptor, network)
 
         db_config = bdk.DatabaseConfig.MEMORY()
@@ -70,10 +78,12 @@ class WalletService:
         return wallet
 
     def get_all_utxos(self) -> List[LocalUtxoType]:
+        """Get all utxos for the current wallet."""
         utxos = self.wallet.list_unspent()
         return utxos
 
     def get_utxos_info(self, utxos_wanted: List[OutpointType]) -> List[LocalUtxoType]:
+        """For a given set of  txids and the vout pointing to a utxo, return the utxos"""
         existing_utxos = cast(List[LocalUtxoType], self.get_all_utxos())
         utxo_dict = {
             f"{utxo.outpoint.txid}_{utxo.outpoint.vout}": utxo
@@ -94,6 +104,9 @@ class WalletService:
         sats_per_vbyte: int,
         raw_output_script: str,
     ) -> BuildTransactionResponseType:
+        """
+        Build an unsigned psbt, using the given utxos as inputs, sats_per_vbyte as the fee rate, and raw_output_script as the locking script.
+        """
         try:
             tx_builder = bdk.TxBuilder()
             outpoints = [utxo.outpoint for utxo in utxos]
@@ -133,6 +146,7 @@ class WalletService:
         script_type: ScriptType,
         sats_per_vbyte: int,
     ) -> GetFeeEstimateForUtxoResponseType:
+        """Create a tx using the given utxos, script type and fee rate, and return the total fee and fee percentage of the tx."""
         example_scripts = {
             ScriptType.P2PKH: p2pkh_raw_output_script,
             ScriptType.P2SH: p2sh_raw_output_script,
