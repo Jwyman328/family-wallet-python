@@ -18,7 +18,7 @@ from src.services.wallet.raw_output_script_examples import (
     p2wsh_raw_output_script,
 )
 from dependency_injector.wiring import inject, Provide
-from src.containers.GlobalDataStoreContainer import GlobalStoreContainer
+from src.containers.global_data_store_container import GlobalStoreContainer
 
 import structlog
 
@@ -131,8 +131,7 @@ class WalletService:
             transaction_amount = total_utxos_amount / 2
 
             tx_builder = tx_builder.add_recipient(script, transaction_amount)
-            built_transaction: TxBuilderResultType = tx_builder.finish(
-                self.wallet)
+            built_transaction: TxBuilderResultType = tx_builder.finish(self.wallet)
             return BuildTransactionResponseType(
                 "success",
                 built_transaction,

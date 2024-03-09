@@ -1,7 +1,7 @@
 from flask import Blueprint
 from src.services import WalletService
 from dependency_injector.wiring import inject, Provide
-from src.containers.ServiceContainer import ServiceContainer
+from src.containers.service_container import ServiceContainer
 import structlog
 
 LOGGER = structlog.get_logger()

@@ -15,8 +15,8 @@ class AppCreator:
     @classmethod
     def create_app(cls) -> Flask:
         from src.views import balance_page, utxo_page, fees_api, wallet_api
-        from src.containers.ServiceContainer import ServiceContainer
-        from src.containers.GlobalDataStoreContainer import GlobalStoreContainer
+        from src.containers.service_container import ServiceContainer
+        from src.containers.global_data_store_container import GlobalStoreContainer
 
         if cls.app is not None:
             return cls.app

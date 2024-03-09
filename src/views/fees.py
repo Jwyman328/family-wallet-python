@@ -1,6 +1,6 @@
 from flask import Blueprint
 from dependency_injector.wiring import inject, Provide
-from src.containers.ServiceContainer import ServiceContainer
+from src.containers.service_container import ServiceContainer
 from src.services import FeeService
 from src.api.fees import FeeEstimates
 import structlog

@@ -2,7 +2,7 @@ from flask import Blueprint, request
 
 from src.services import GlobalDataStore
 from dependency_injector.wiring import inject, Provide
-from src.containers.GlobalDataStoreContainer import GlobalStoreContainer
+from src.containers.global_data_store_container import GlobalStoreContainer
 
 import structlog
 import json

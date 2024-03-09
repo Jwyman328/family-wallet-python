@@ -1,5 +1,4 @@
 # TODOs
-- commit latest refactor changes
 - Fix naming of GlobalDataStoreContainer.py and ServiceContainer.py file names, make them snake case names
 - on the FE fix tailwind so it works
     - https://blog.saeloun.com/2023/02/24/integrate-tailwind-css-with-electron/
