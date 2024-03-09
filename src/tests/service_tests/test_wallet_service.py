@@ -35,7 +35,7 @@ class TestWalletService(TestCase):
         with patch.object(
             WalletService, "connect_wallet", return_value=self.bdk_wallet_mock
         ):
-            self.wallet_service = WalletService(wallet_descriptor, bdk.Network.TESTNET)
+            self.wallet_service = WalletService()
 
     def test_get_all_utxos(self):
         utxos = self.wallet_service.get_all_utxos()

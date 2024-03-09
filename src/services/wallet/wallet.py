@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 import bdkpython as bdk
 from typing import Literal, Optional, cast, List
+
+from src.services import GlobalDataStore
 from src.types import (
     OutpointType,
     ScriptType,
@@ -15,8 +17,11 @@ from src.services.wallet.raw_output_script_examples import (
     p2wpkh_raw_output_script,
     p2wsh_raw_output_script,
 )
+from dependency_injector.wiring import inject, Provide
+from src.containers.GlobalDataStoreContainer import GlobalStoreContainer
 
 import structlog
+
 
 LOGGER = structlog.get_logger()
 
@@ -43,43 +48,22 @@ class WalletService:
 
     def __init__(
         self,
-        descriptor: Optional[str] = None,
-        network=bdk.Network.TESTNET,
-        electrum_url="127.0.0.1:50000",
     ):
-        wallet_descriptor = descriptor if descriptor else self.get_global_descriptor()
-        self.wallet = WalletService.connect_wallet(
-            wallet_descriptor, network, electrum_url
-        )
+        self.wallet = self.connect_wallet()
 
-    @classmethod
-    def set_global_descriptor(cls, descriptor: str) -> str:
-        """Set the flask app level global wallet_descriptor."""
-        from src.app import global_data_store
-
-        global_data_store["wallet_descriptor"] = descriptor
-        LOGGER.info("Global wallet descriptor set", descriptor=descriptor)
-
-        return descriptor
-
-    @classmethod
-    def get_global_descriptor(cls) -> str:
-        """Get the flask app level global wallet_descriptor."""
-        from src.app import global_data_store
-
-        descriptor = global_data_store.get("wallet_descriptor", "")
-        return descriptor
-
-    @classmethod
+    @inject
     def connect_wallet(
         cls,
-        descriptor: Optional[str] = None,
-        network=bdk.Network.TESTNET,
-        electrum_url="127.0.0.1:50000",
+        global_data_store: GlobalDataStore = Provide[
+            GlobalStoreContainer.global_data_store
+        ],
     ) -> bdk.Wallet:
         """Using a given descriptor, connect to an electrum server and return the bdk wallet"""
 
-        descriptor = descriptor if descriptor else cls.get_global_descriptor()
+        descriptor = global_data_store.wallet_details.descriptor
+        network = global_data_store.wallet_details.network
+        electrum_url = global_data_store.wallet_details.electrum_url
+
         wallet_descriptor = bdk.Descriptor(descriptor, network)
 
         db_config = bdk.DatabaseConfig.MEMORY()
@@ -147,7 +131,8 @@ class WalletService:
             transaction_amount = total_utxos_amount / 2
 
             tx_builder = tx_builder.add_recipient(script, transaction_amount)
-            built_transaction: TxBuilderResultType = tx_builder.finish(self.wallet)
+            built_transaction: TxBuilderResultType = tx_builder.finish(
+                self.wallet)
             return BuildTransactionResponseType(
                 "success",
                 built_transaction,

@@ -8,8 +8,6 @@ import structlog
 
 LOGGER = structlog.get_logger()
 
-global_data_store = {}
-
 
 class AppCreator:
     app = None
@@ -17,12 +15,14 @@ class AppCreator:
     @classmethod
     def create_app(cls) -> Flask:
         from src.views import balance_page, utxo_page, fees_api, wallet_api
-        from src.injection import ServiceContainer
+        from src.containers.ServiceContainer import ServiceContainer
+        from src.containers.GlobalDataStoreContainer import GlobalStoreContainer
 
         if cls.app is not None:
             return cls.app
         else:
             container = ServiceContainer()
+            data_container = GlobalStoreContainer()
             cls.app = Flask(__name__)
             CORS(
                 cls.app,
@@ -32,6 +32,7 @@ class AppCreator:
             )
 
             cls.app.container = container
+            cls.app.data_container = data_container
             cls.app.register_blueprint(balance_page)
             cls.app.register_blueprint(utxo_page)
             cls.app.register_blueprint(fees_api)

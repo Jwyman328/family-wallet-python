@@ -2,7 +2,7 @@ from flask import Blueprint, request
 
 from src.services import WalletService
 from dependency_injector.wiring import inject, Provide
-from src.injection import ServiceContainer
+from src.containers.ServiceContainer import ServiceContainer
 from src.types.bdk_types import OutpointType
 from src.types.script_types import ScriptType
 from typing import Dict, cast
@@ -46,7 +46,8 @@ def get_fee_for_utxo(
     utxos_wanted = []
     for tx in transactions:
         tx_formatted = cast(Dict[str, str], tx)
-        utxos_wanted.append(OutpointType(tx_formatted["id"], int(tx_formatted["vout"])))
+        utxos_wanted.append(OutpointType(
+            tx_formatted["id"], int(tx_formatted["vout"])))
 
     utxos = wallet_service.get_utxos_info(utxos_wanted)
 
