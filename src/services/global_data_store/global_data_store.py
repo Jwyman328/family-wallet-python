@@ -1,5 +1,4 @@
 from typing import Optional
-from bdkpython import Network
 from src.types.wallet import WalletDetails
 from bdkpython import bdk
 import structlog
@@ -11,7 +10,7 @@ class GlobalDataStore:
     def __init__(
         self,
         descriptor: Optional[str] = None,
-        network: Network = bdk.Network.TESTNET,
+        network: bdk.Network = bdk.Network.TESTNET,
         electrum_url="127.0.0.1:50000",
     ):
         self.wallet_details = WalletDetails(
@@ -28,3 +27,17 @@ class GlobalDataStore:
         LOGGER.info("Global wallet descriptor set", descriptor=descriptor)
 
         return descriptor
+
+    def set_global_network(self, network: str) -> bdk.Network:
+        """Set the flask app level global network for the underlying wallet"""
+        bdk_network: bdk.Network = bdk.Network.__members__[network]
+        self.wallet_details.network = bdk_network
+
+        LOGGER.info("Global wallet network set", network=bdk_network)
+
+        return bdk_network
+
+    def set_global_electrum_url(self, electrum_url: str):
+        """Set the flask app level global electrum url for the underlying wallet to access"""
+        self.wallet_details.electrum_url = electrum_url
+        return electrum_url

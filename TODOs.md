@@ -1,7 +1,5 @@
 # TODOs
-- Fix naming of GlobalDataStoreContainer.py and ServiceContainer.py file names, make them snake case names
-- on the FE fix tailwind so it works
-    - https://blog.saeloun.com/2023/02/24/integrate-tailwind-css-with-electron/
+- todo add FE sending over the wallet netowrk and electrum url
 - write tests for POST /wallet endpoint that sets the global descriptor
     - also write related tests for the wallet sevice that sets the descriptor,
     - also probably have to fix all test I broke from it.

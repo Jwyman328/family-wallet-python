@@ -23,7 +23,16 @@ def create_wallet(
     Set the global level wallet descriptor.
     """
 
-    descriptor = json.loads(request.data)
-    global_data_store.set_global_descriptor(descriptor["descriptor"])
+    # TODO use pydantic here
+    data = json.loads(request.data)
 
-    return {"message": "wallet created successfully", "descriptor": descriptor}
+    global_data_store.set_global_descriptor(data["descriptor"])
+    global_data_store.set_global_network(data["network"])
+    global_data_store.set_global_electrum_url(data["electrumUrl"])
+
+    return {
+        "message": "wallet created successfully",
+        "descriptor": data["descriptor"],
+        "network": data["network"],
+        "electrumUrl": data["electrumUrl"],
+    }
