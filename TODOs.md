@@ -1,19 +1,18 @@
 # TODOs
-- todo add FE sending over the wallet netowrk and electrum url
-- write tests for POST /wallet endpoint that sets the global descriptor
-    - also write related tests for the wallet sevice that sets the descriptor,
-    - also probably have to fix all test I broke from it.
-- add addility to set the electrum server and the netwrok type in the login screen as well in the frontend and add endpoints for them as well.
+- remove ngiri docker containers i am not relaly using
+- pydantic for all response values.
+    - this way we are validating our expected responses, and if they are not what we saying what they should be then we will throw an error. This should be cause and have a way to handle this response.  could use a context or a regular try catch
+- pydantic for the post requests.
+- style the frontend.
 - remove all the fe github build pipeline stuff that I don't want that I got from cloning a bioler late project
 
 - get the flask app to be an executable file
     - https://www.youtube.com/watch?v=ty-n33mHwC4&ab_channel=Montreal-Python
     - use pyinstaller https://pyinstaller.org/en/stable/
 
-- add a "login" screen where you can not pass until you have entered your pubkey.
-    - then I can lockdown the other endpoints to require that the user is "logged in" and the pubkey is in the server?
-- add better logging everywhere
 - create a fee market in the ngiri mempool somehow
 - add a pyproject.toml to manage ruff line length stuff so that ruff formatting is inline with the lsp?
 - do async await getting the current memepool fee rates?
+    - I could do a web socket connection and use a background task for it?
+    - maybe this is more of a nice to have after the main project is done.
 

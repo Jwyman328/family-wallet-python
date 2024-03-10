@@ -43,3 +43,26 @@ class TestWalletController(TestCase):
                 "network": network,
                 "electrumUrl": electrum_url,
             }
+
+    def test_wallet_controller_request_validation_error(self):
+        with patch.object(
+            GlobalDataStore, "set_global_descriptor"
+        ) as set_global_descriptor_mock, patch.object(
+            GlobalDataStore, "set_global_network"
+        ) as set_global_network_mock, patch.object(
+            GlobalDataStore, "set_global_electrum_url"
+        ) as set_global_eletrum_url_mock:
+            wallet_response = self.test_client.post(
+                "/wallet/",
+                json={},
+            )
+
+            set_global_descriptor_mock.assert_not_called()
+            set_global_network_mock.assert_not_called()
+            set_global_eletrum_url_mock.assert_not_called()
+
+            assert wallet_response.status == "400 BAD REQUEST"
+            response_data = json.loads(wallet_response.data)
+            assert response_data["message"] == "Error creating wallet"
+            # an error for each required field descriptor, network, and electrumUrl
+            assert len(response_data["errors"]) == 3

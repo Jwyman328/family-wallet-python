@@ -5,3 +5,4 @@ pytest
 flask-cors
 requests
 structlog
+pydantic==2.6.0
