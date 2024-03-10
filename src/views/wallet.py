@@ -3,7 +3,6 @@ from flask import Blueprint, request
 from src.services import GlobalDataStore
 from dependency_injector.wiring import inject, Provide
 from src.containers.global_data_store_container import GlobalStoreContainer
-import json
 import structlog
 
 from pydantic import BaseModel, ValidationError
@@ -37,8 +36,7 @@ def create_wallet(
     Set the global level wallet descriptor.
     """
     try:
-        data_loaded = json.loads(request.data)
-        data = CreateWalletRequestDto(**data_loaded)
+        data = CreateWalletRequestDto.model_validate_json(request.data)
 
         global_data_store.set_global_descriptor(data.descriptor)
         global_data_store.set_global_network(data.network)
