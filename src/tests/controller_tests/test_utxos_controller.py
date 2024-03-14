@@ -102,7 +102,7 @@ class TestUtxosController(TestCase):
             )
 
             assert json.loads(response.data) == {
-                "error": "unspendable",
+                "errors": ["unspendable"],
                 "spendable": False,
             }
 
@@ -133,6 +133,22 @@ class TestUtxosController(TestCase):
             )
 
             assert json.loads(response.data) == {
-                "error": "error getting fee estimate for utxo",
+                "errors": ["error getting fee estimate for utxo"],
                 "spendable": False,
             }
+
+    def test_get_utxo_fee_request_data_validation_error(self):
+        with self.app.container.wallet_service.override(self.mock_wallet_service):
+            self.mock_wallet_service.get_utxos_info.return_value = [local_utxo_mock]
+
+            transactions = ["bad data", "yes it is bad"]
+            response = self.test_client.post(
+                "/utxos/fees", query_string={"feeRate": "1"}, json=transactions
+            )
+
+            assert response.status == "400 BAD REQUEST"
+
+            response_data = json.loads(response.data)
+            assert response_data["message"] == "Error getting fee estimate for utxos"
+            assert response_data["spendable"] == False
+            assert len(response_data["errors"]) == 2
