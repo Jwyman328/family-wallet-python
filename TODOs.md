@@ -2,9 +2,6 @@
 - add mypy
 - is there an actual electrum server online that I can use like sparrow wallet is using that a user can seelct from a drop down?
 - remove ngiri docker containers i am not relaly using
-- pydantic for all response values. -c
-    - this way we are validating our expected responses, and if they are not what we saying what they should be then we will throw an error. This should be cause and have a way to handle this response.  could use a context or a regular try catch
-- pydantic for the post requests.
 - style the frontend.
 - remove all the fe github build pipeline stuff that I don't want that I got from cloning a bioler late project
 
