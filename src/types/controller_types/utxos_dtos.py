@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, field_validator, Field
 import structlog
 
 LOGGER = structlog.get_logger()
@@ -13,7 +13,7 @@ class GetUtxosRequestDto(BaseModel):
     fee_rate: str = Field(default="1")
     transactions: list[TransactionDto]
 
-    @validator("transactions")
+    @field_validator("transactions")
     def check_empty_transactions_list(cls, v):
         if not v:
             LOGGER.error("no transactions were supplied")

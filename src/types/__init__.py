@@ -15,3 +15,7 @@ from src.types.controller_types.utxos_dtos import (
     GetUtxosErrorResponseDto,
     GetAllUtxosResponseDto,
 )
+
+from src.types.controller_types.fees_dtos import GetCurrentFeesResponseDto
+
+from src.types.controller_types.balance_dtos import GetBalanceResponseDto
