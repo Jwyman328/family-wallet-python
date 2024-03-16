@@ -1,4 +1,5 @@
 # TODOs
+- add mypy
 - is there an actual electrum server online that I can use like sparrow wallet is using that a user can seelct from a drop down?
 - remove ngiri docker containers i am not relaly using
 - pydantic for all response values. -c

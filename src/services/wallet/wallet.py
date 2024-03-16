@@ -9,6 +9,7 @@ from src.types import (
     LocalUtxoType,
     TxBuilderResultType,
     FeeDetails,
+    GetUtxosRequestDto,
 )
 from src.services.wallet.raw_output_script_examples import (
     p2pkh_raw_output_script,
@@ -131,7 +132,8 @@ class WalletService:
             transaction_amount = total_utxos_amount / 2
 
             tx_builder = tx_builder.add_recipient(script, transaction_amount)
-            built_transaction: TxBuilderResultType = tx_builder.finish(self.wallet)
+            built_transaction: TxBuilderResultType = tx_builder.finish(
+                self.wallet)
             return BuildTransactionResponseType(
                 "success",
                 built_transaction,
@@ -181,3 +183,20 @@ class WalletService:
                 return GetFeeEstimateForUtxoResponseType("error", None)
         else:
             return GetFeeEstimateForUtxoResponseType(tx_response.status, None)
+
+    def get_fee_estimate_for_utxos_from_request(
+        self, get_utxos_request_dto: GetUtxosRequestDto
+    ):
+        utxos_wanted = []
+        for tx in get_utxos_request_dto.transactions:
+            utxos_wanted.append(OutpointType(tx.id, int(tx.vout)))
+
+        utxos = self.get_utxos_info(utxos_wanted)
+
+        # todo: get this value from query param
+        mock_script_type = ScriptType.P2PKH
+        fee_estimate_response = self.get_fee_estimate_for_utxos(
+            utxos, mock_script_type, int(get_utxos_request_dto.fee_rate)
+        )
+
+        return fee_estimate_response

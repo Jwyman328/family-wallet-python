@@ -2,8 +2,11 @@ from unittest.case import TestCase
 import os
 from unittest.mock import MagicMock, patch
 from src.services import WalletService
+from src.services.wallet.wallet import (
+    GetFeeEstimateForUtxoResponseType,
+    BuildTransactionResponseType,
+)
 import bdkpython as bdk
-from src.services.wallet.wallet import BuildTransactionResponseType
 from src.types.bdk_types import (
     FeeDetails,
     LocalUtxoType,
@@ -11,6 +14,7 @@ from src.types.bdk_types import (
     TxBuilderResultType,
     TxOutType,
 )
+from src.types import GetUtxosRequestDto
 from src.types.script_types import ScriptType
 from src.tests.mocks import local_utxo_mock, transaction_details_mock
 from typing import cast
@@ -151,3 +155,46 @@ class TestWalletService(TestCase):
 
             assert get_fee_estimate_response.status == "error"
             assert get_fee_estimate_response.data == None
+
+    def test_get_fee_estimate_for_utxos_from_request(self):
+        mock_utxos = [local_utxo_mock]
+
+        fee_rate = "5"
+        transactions = [
+            {
+                "id": f"{local_utxo_mock.outpoint.txid}",
+                "vout": f"{local_utxo_mock.outpoint.vout}",
+            },
+        ]
+        mock_get_utxos_request_dto = GetUtxosRequestDto.model_validate(
+            dict(transactions=transactions, fee_rate=fee_rate)
+        )
+
+        mock_fee_estimates_response = GetFeeEstimateForUtxoResponseType(
+            status="success", data=FeeDetails(0.1, 100)
+        )
+
+        with patch.object(
+            WalletService, "get_utxos_info", return_value=mock_utxos
+        ) as mock_get_utxos_info, patch.object(
+            WalletService,
+            "get_fee_estimate_for_utxos",
+            return_value=mock_fee_estimates_response,
+        ) as mock_get_fee_estimate_for_utxos:
+            fee_estimate_response = (
+                self.wallet_service.get_fee_estimate_for_utxos_from_request(
+                    mock_get_utxos_request_dto
+                )
+            )
+            mock_get_utxos_info.assert_called_with(
+                [
+                    OutpointType(
+                        local_utxo_mock.outpoint.txid, local_utxo_mock.outpoint.vout
+                    )
+                ]
+            )
+
+            mock_get_fee_estimate_for_utxos.assert_called_with(
+                mock_utxos, ScriptType.P2PKH, int(mock_get_utxos_request_dto.fee_rate)
+            )
+            assert fee_estimate_response == mock_fee_estimates_response
