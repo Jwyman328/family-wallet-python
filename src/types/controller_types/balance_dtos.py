@@ -2,6 +2,6 @@ from pydantic import BaseModel
 
 
 class GetBalanceResponseDto(BaseModel):
-    total: str
-    spendable: str
-    confirmed: str
+    total: int
+    spendable: int
+    confirmed: int

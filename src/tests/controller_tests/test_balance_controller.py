@@ -8,9 +8,9 @@ import json
 
 @dataclass
 class MockGetBalanceResponse:
-    total: str
-    spendable: str
-    confirmed: str
+    total: int
+    spendable: int
+    confirmed: int
 
 
 class TestBalanceController(TestCase):
@@ -25,13 +25,13 @@ class TestBalanceController(TestCase):
     def test_balance_controller_returns_balance(self):
         with self.app.container.wallet_service.override(self.mock_wallet_service):
             self.mock_online_wallet.get_balance = mock.Mock(
-                return_value=MockGetBalanceResponse("10000", "10000", "10000")
+                return_value=MockGetBalanceResponse(10000, 10000, 10000)
             )
             self.mock_wallet_service.wallet = self.mock_online_wallet
             response = self.test_client.get("/balance/")
             assert response.status == "200 OK"
             assert json.loads(response.data) == {
-                "total": "10000",
-                "spendable": "10000",
-                "confirmed": "10000",
+                "total": 10000,
+                "spendable": 10000,
+                "confirmed": 10000,
             }

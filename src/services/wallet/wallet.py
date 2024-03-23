@@ -69,7 +69,7 @@ class WalletService:
 
         db_config = bdk.DatabaseConfig.MEMORY()
         blockchain_config = bdk.BlockchainConfig.ELECTRUM(
-            bdk.ElectrumConfig(electrum_url, None, 5, None, 100, True)
+            bdk.ElectrumConfig(electrum_url, None, 2, 30, 100, True)
         )
 
         blockchain = bdk.Blockchain(blockchain_config)
@@ -117,8 +117,11 @@ class WalletService:
         """
         try:
             tx_builder = bdk.TxBuilder()
+
+            tx_builder = tx_builder.manually_selected_only()
             outpoints = [utxo.outpoint for utxo in utxos]
             tx_builder = tx_builder.add_utxos(outpoints)
+
             tx_builder = tx_builder.fee_rate(sats_per_vbyte)
             binary_script = bytes.fromhex(raw_output_script)
 
@@ -132,8 +135,7 @@ class WalletService:
             transaction_amount = total_utxos_amount / 2
 
             tx_builder = tx_builder.add_recipient(script, transaction_amount)
-            built_transaction: TxBuilderResultType = tx_builder.finish(
-                self.wallet)
+            built_transaction: TxBuilderResultType = tx_builder.finish(self.wallet)
             return BuildTransactionResponseType(
                 "success",
                 built_transaction,

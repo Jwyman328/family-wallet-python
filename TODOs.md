@@ -1,6 +1,5 @@
 # TODOs
 - add mypy
-- is there an actual electrum server online that I can use like sparrow wallet is using that a user can seelct from a drop down?
 - remove ngiri docker containers i am not relaly using
 - style the frontend.
 - remove all the fe github build pipeline stuff that I don't want that I got from cloning a bioler late project
