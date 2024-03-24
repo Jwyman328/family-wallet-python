@@ -1,4 +1,5 @@
 # TODOs
+- make fee setting a slider
 - add mypy
 - remove ngiri docker containers i am not relaly using
 - style the frontend.

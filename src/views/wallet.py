@@ -5,6 +5,10 @@ from dependency_injector.wiring import inject, Provide
 from src.containers.global_data_store_container import GlobalStoreContainer
 import structlog
 
+from src.types import ScriptType
+from src.services import WalletService
+from src.containers.service_container import ServiceContainer
+
 from pydantic import BaseModel, ValidationError
 
 wallet_api = Blueprint("wallet", __name__, url_prefix="/wallet")
@@ -23,6 +27,11 @@ class CreateWalletResponseDto(BaseModel):
     descriptor: str
     network: str
     electrumUrl: str
+
+
+class GetWalletTypeResponseDto(BaseModel):
+    message: str
+    type: ScriptType
 
 
 @wallet_api.route("/", methods=["POST"])
@@ -51,3 +60,23 @@ def create_wallet(
 
     except ValidationError as e:
         return {"message": "Error creating wallet", "errors": e.errors()}, 400
+
+
+@wallet_api.route("/type", methods=["GET"])
+@inject
+def get_wallet_type(
+    wallet_service: WalletService = Provide[ServiceContainer.wallet_service],
+):
+    """
+    Get the type of wallet descriptor address type.
+    """
+    try:
+        script_type = wallet_service.get_script_type()
+
+        return GetWalletTypeResponseDto(
+            message="Wallet type",
+            type=script_type,
+        ).model_dump()
+
+    except ValidationError as e:
+        return {"message": "Error getting wallet type", "errors": e.errors()}, 400

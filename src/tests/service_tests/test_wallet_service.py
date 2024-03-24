@@ -1,6 +1,6 @@
 from unittest.case import TestCase
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, Mock
 from src.services import WalletService
 from src.services.wallet.wallet import (
     GetFeeEstimateForUtxoResponseType,
@@ -55,6 +55,7 @@ class TestWalletService(TestCase):
                 psbt="mock_psbt", transaction_details=transaction_details_mock
             )
             tx_builder_mock.add_utxos.return_value = tx_builder_mock
+            tx_builder_mock.manually_selected_only.return_value = tx_builder_mock
             tx_builder_mock.fee_rate.return_value = tx_builder_mock
             tx_builder_mock.add_recipient.return_value = tx_builder_mock
 
@@ -74,6 +75,8 @@ class TestWalletService(TestCase):
             tx_builder_mock.add_utxos.return_value = tx_builder_mock
             tx_builder_mock.fee_rate.return_value = tx_builder_mock
             tx_builder_mock.add_recipient.return_value = tx_builder_mock
+
+            tx_builder_mock.manually_selected_only.return_value = tx_builder_mock
             tx_builder_mock.finish.side_effect = bdk.BdkError.InsufficientFunds()
             build_transaction_response = self.wallet_service.build_transaction(
                 [local_utxo_mock],
@@ -89,6 +92,9 @@ class TestWalletService(TestCase):
         with patch.object(bdk, "TxBuilder", return_value=mock_tx_builder):
             mock_tx_builder.add_utxos.return_value = mock_tx_builder
             mock_tx_builder.fee_rate.return_value = mock_tx_builder
+
+            mock_tx_builder.manually_selected_only.return_value = mock_tx_builder
+
             mock_tx_builder.add_recipient.return_value = mock_tx_builder
             mock_tx_builder.finish.side_effect = Exception("error")
 
@@ -112,6 +118,8 @@ class TestWalletService(TestCase):
             tx_builder_mock.add_utxos.return_value = tx_builder_mock
             tx_builder_mock.fee_rate.return_value = tx_builder_mock
             tx_builder_mock.add_recipient.return_value = tx_builder_mock
+
+            tx_builder_mock.manually_selected_only.return_value = tx_builder_mock
 
             tx_builder_mock.finish.return_value = built_transaction_mock
 
@@ -198,3 +206,54 @@ class TestWalletService(TestCase):
                 mock_utxos, ScriptType.P2PKH, int(mock_get_utxos_request_dto.fee_rate)
             )
             assert fee_estimate_response == mock_fee_estimates_response
+
+    def test_script_type_is_p2wpkh(self):
+        mock_wallet = Mock()
+        address_info_mock = Mock()
+        address_mock = Mock()
+        payload_mock = Mock()
+        payload_mock.is_witness_program = Mock(return_value=True)
+        payload_mock.is_script_hash = Mock(return_value=False)
+        address_mock.payload = Mock(return_value=payload_mock)
+        address_info_mock.address = address_mock
+
+        mock_wallet.get_address = Mock(return_value=address_info_mock)
+        self.wallet_service.wallet = mock_wallet
+
+        script_type = self.wallet_service.get_script_type()
+
+        assert script_type == ScriptType.P2WPKH
+
+    def test_script_type_is_p2sh(self):
+        mock_wallet = Mock()
+        address_info_mock = Mock()
+        address_mock = Mock()
+        payload_mock = Mock()
+        payload_mock.is_witness_program = Mock(return_value=False)
+        payload_mock.is_script_hash = Mock(return_value=True)
+        address_mock.payload = Mock(return_value=payload_mock)
+        address_info_mock.address = address_mock
+
+        mock_wallet.get_address = Mock(return_value=address_info_mock)
+        self.wallet_service.wallet = mock_wallet
+
+        script_type = self.wallet_service.get_script_type()
+
+        assert script_type == ScriptType.P2SH
+
+    def test_script_type_is_p2pkh(self):
+        mock_wallet = Mock()
+        address_info_mock = Mock()
+        address_mock = Mock()
+        payload_mock = Mock()
+        payload_mock.is_witness_program = Mock(return_value=False)
+        payload_mock.is_script_hash = Mock(return_value=False)
+        address_mock.payload = Mock(return_value=payload_mock)
+        address_info_mock.address = address_mock
+
+        mock_wallet.get_address = Mock(return_value=address_info_mock)
+        self.wallet_service.wallet = mock_wallet
+
+        script_type = self.wallet_service.get_script_type()
+
+        assert script_type == ScriptType.P2PKH

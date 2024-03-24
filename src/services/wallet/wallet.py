@@ -85,6 +85,21 @@ class WalletService:
 
         return wallet
 
+    def get_script_type(
+        self,
+    ) -> ScriptType:
+        "Get the script type for the current wallet."
+        address: bdk.AddressInfo = self.wallet.get_address(
+            bdk.AddressIndex.LAST_UNUSED()
+        )
+        payload: bdk.Payload = address.address.payload()
+        if payload.is_witness_program():
+            return ScriptType.P2WPKH
+        elif payload.is_script_hash():
+            return ScriptType.P2SH
+        else:
+            return ScriptType.P2PKH
+
     def get_all_utxos(self) -> List[LocalUtxoType]:
         """Get all utxos for the current wallet."""
         utxos = self.wallet.list_unspent()
@@ -135,7 +150,10 @@ class WalletService:
             transaction_amount = total_utxos_amount / 2
 
             tx_builder = tx_builder.add_recipient(script, transaction_amount)
-            built_transaction: TxBuilderResultType = tx_builder.finish(self.wallet)
+            built_transaction: TxBuilderResultType = tx_builder.finish(
+                self.wallet)
+
+            built_transaction.transaction_details.transaction
             return BuildTransactionResponseType(
                 "success",
                 built_transaction,
