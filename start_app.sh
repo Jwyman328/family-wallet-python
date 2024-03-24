@@ -12,21 +12,25 @@ do
     nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s 1.0
 done
 
+sleep 1
 for value in {1..3} 
 do
     nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s .01 
 done
 
+sleep 1
 for value in {1..3} 
 do
     nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s .001 
 done
 
+sleep 1
 for value in {1..3} 
 do
     nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s .0001 
 done
 
+sleep 1
 for value in {1..3} 
 do
     nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s .00001
