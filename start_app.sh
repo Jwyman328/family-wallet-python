@@ -15,7 +15,7 @@ done
 sleep 1
 for value in {1..3} 
 do
-    nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s .01 
+    nigiri faucet bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s .02 
 done
 
 sleep 1
