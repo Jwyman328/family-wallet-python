@@ -38,4 +38,7 @@ done
 
 
 sleep 5 # sleep 5 give nigiri extra start up time before flask run can be run.
-flask run -h localhost -p 5011 --reload
+# flask run -h localhost -p 5011 --reload
+#
+# todo add back in, just want to run electrum server at the moment
+# python3 src/app.py

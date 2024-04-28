@@ -13,4 +13,4 @@
 - do async await getting the current memepool fee rates?
     - I could do a web socket connection and use a background task for it?
     - maybe this is more of a nice to have after the main project is done.
-
+- double check the fees are not mock values
